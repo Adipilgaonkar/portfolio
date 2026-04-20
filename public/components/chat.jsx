@@ -52,23 +52,15 @@ function Chat({ data }) {
     animateTrace(text);
 
     try {
-      const context = `You are Aditya Pilgaonkar's AI twin. Answer in first person as Aditya, in 2-4 short sentences.
-Keep it warm, concise, confident. No corporate buzzwords. Don't mention company names.
-
-CV SUMMARY:
-- AI Engineer, 5+ years, based in London.
-- Current: Senior AI Engineer at a global consulting firm — enterprise RAG, agentic AI on Azure, LangGraph, MCP tools, GDPR governance, OTel observability.
-- Prior: Senior AI Engineer for a global logistics operator — multi-agent customer-service platform cutting average handling time by 47%, predictive route ML with 1.2d transit-time MAE, MCP-wrapped business tools.
-- Prior: Senior AI Data Scientist (NLP) for a UK private hospital group — medical NLP pipeline lifting data quality 40%, clinical RAG on Pinecone, 30% latency reduction.
-- Prior: ML Engineer for a semiconductor IP licensor — socioeconomic segmentation across 150+ countries with ARI 0.86, KNN imputation at 7.2% MAPE, 9.8% 1-yr forecast MAPE.
-- Stack: PyTorch, LangChain, LangGraph, LlamaIndex, OpenAI Agents SDK, Azure OpenAI, Azure AI Search, Pinecone, Airflow, AKS, MLflow, RAGAS, Promptfoo, Purview.
-- Education: MSc Data Science & Machine Learning (Distinction), Anglia Ruskin University.
-- Principles: shipping production AI with observability, evaluation, and governance from day one.
-
-Question: ${text}`;
-
-      const reply = await window.claude.complete(context);
-      setMessages(m => [...m, { role: 'ai', text: reply.trim() }]);
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: text })
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (!data?.reply) throw new Error('Empty reply');
+      setMessages(m => [...m, { role: 'ai', text: data.reply.trim() }]);
     } catch (e) {
       setMessages(m => [...m, { role: 'ai', text: "Connection to the model dropped — but the short version: I ship production AI. RAG, agents, evaluation, governance. Ping me directly and I'll walk you through it." }]);
     } finally {
@@ -84,7 +76,7 @@ Question: ${text}`;
           <div>
             <div className="eyebrow">Chat · Grounded RAG</div>
             <h2 className="section-title">Ask my AI twin.</h2>
-            <p className="section-lede">A real RAG agent running on Claude, grounded on Aditya's CV and projects. Watch the retrieval trace on the right as it answers.</p>
+            <p className="section-lede">A real RAG agent running on Gemini, grounded on Aditya's CV and projects. Watch the retrieval trace on the right as it answers.</p>
           </div>
         </div>
 
@@ -93,7 +85,7 @@ Question: ${text}`;
             <div className="chat-header">
               <div className="dots"><i/><i/><i/></div>
               <div className="title">aditya-twin.v1.4</div>
-              <div className="model">claude-haiku</div>
+              <div className="model">gemini-2.5-flash-lite</div>
             </div>
             <div className="chat-messages" ref={messagesRef}>
               {messages.map((m,i) => (
@@ -141,7 +133,7 @@ Question: ${text}`;
                 <span>02</span><span className="label">hybrid_search · vector + BM25 + rerank</span><span className="timing">~120ms</span>
               </div>
               <div className={`trace-step ${trace.step === 3 ? 'active' : ''}`}>
-                <span>03</span><span className="label">generate(ctx) · claude-haiku · streaming</span><span className="timing">~900ms</span>
+                <span>03</span><span className="label">generate(ctx) · gemini-2.5-flash-lite · streaming</span><span className="timing">~900ms</span>
               </div>
             </div>
             <div>

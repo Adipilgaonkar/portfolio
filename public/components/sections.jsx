@@ -114,8 +114,7 @@ function Contact({ data }) {
 function Footer({ data }) {
   return (
     <footer className="footer">
-      <span>© 2026 {data.name} · Built with React, Claude & care</span>
-      <span>/ v1.4 · last_deploy 2026-04-20</span>
+      <span>© 2026 {data.name} · All rights reserved</span>
     </footer>
   );
 }
